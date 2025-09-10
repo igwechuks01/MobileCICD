@@ -12,20 +12,19 @@ workflows:
           #!/usr/bin/env bash
           set -euo pipefail
 
-          # Detect Yarn version
+          echo "🔍 Checking Yarn version..."
           if [ -f ".yarnrc.yml" ]; then
             echo "📦 Yarn Berry (v2/v3) detected"
-            corepack enable || true
-            corepack prepare yarn@3.6.4 --activate || true
+            corepack enable || echo "⚠️ Corepack already enabled"
+            corepack prepare yarn@3.6.4 --activate || echo "⚠️ Yarn already prepared"
           else
             echo "📦 Yarn v1 detected (default on Codemagic)"
-            npm install -g yarn || true
+            npm install -g yarn || echo "⚠️ Yarn already installed"
           fi
 
-          # Install JS dependencies
+          echo "📦 Installing JS dependencies"
           yarn install --ignore-engines
 
-          # If iOS folder exists, install pods (skip if not present)
           if [ -d "ios" ]; then
             echo "📱 Installing CocoaPods dependencies"
             cd ios
@@ -34,6 +33,8 @@ workflows:
           else
             echo "ℹ️ Skipping iOS setup (no ios/ directory found)"
           fi
+
+          echo "✅ Dependencies installed successfully"
 
       - name: Build unsigned Android APK
         working_directory: /usr/mobile-app/MobileCICD/android
