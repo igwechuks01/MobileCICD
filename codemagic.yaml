@@ -6,21 +6,34 @@ workflows:
       node: latest
       java: 17
     scripts:
-      - name: Setup Yarn
+      - name: Setup and install dependencies
         working_directory: /usr/mobile-app/MobileCICD
         script: |
+          #!/usr/bin/env bash
+          set -euo pipefail
+
+          # Detect Yarn version
           if [ -f ".yarnrc.yml" ]; then
-            echo "Yarn Berry detected"
-            corepack enable
-            corepack prepare yarn@3.6.4 --activate
+            echo "📦 Yarn Berry (v2/v3) detected"
+            corepack enable || true
+            corepack prepare yarn@3.6.4 --activate || true
           else
-            echo "Yarn v1 detected"
-            npm install -g yarn
+            echo "📦 Yarn v1 detected (default on Codemagic)"
+            npm install -g yarn || true
           fi
 
-      - name: Install dependencies
-        working_directory: /usr/mobile-app/MobileCICD
-        script: yarn install --ignore-engines
+          # Install JS dependencies
+          yarn install --ignore-engines
+
+          # If iOS folder exists, install pods (skip if not present)
+          if [ -d "ios" ]; then
+            echo "📱 Installing CocoaPods dependencies"
+            cd ios
+            pod install --repo-update
+            cd ..
+          else
+            echo "ℹ️ Skipping iOS setup (no ios/ directory found)"
+          fi
 
       - name: Build unsigned Android APK
         working_directory: /usr/mobile-app/MobileCICD/android
