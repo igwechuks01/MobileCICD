@@ -5,6 +5,7 @@ workflows:
     environment:
       node: latest
       java: 17
+
     scripts:
       - name: Debug print current directory
         script: |
@@ -14,21 +15,34 @@ workflows:
 
       - name: Setup Yarn
         script: |
+          #!/usr/bin/env bash
+          set -euo pipefail
+
           if [ -f ".yarnrc.yml" ]; then
-            echo "Yarn Berry detected"
+            echo "📦 Yarn Berry detected"
             corepack enable
             corepack prepare yarn@3.6.4 --activate
           else
-            echo "Yarn v1 detected"
-            npm install -g yarn
+            echo "📦 Yarn v1 detected (already installed on Codemagic)"
+            yarn --version
           fi
 
       - name: Install dependencies
-        script: yarn install --ignore-engines
+        script: |
+          #!/usr/bin/env bash
+          set -euo pipefail
+          echo "📦 Installing project dependencies..."
+          yarn install --ignore-engines
+          echo "✅ Dependencies installed successfully"
 
       - name: Build unsigned Android APK
         working_directory: android
-        script: ./gradlew assembleRelease -x signReleaseBundle
+        script: |
+          #!/usr/bin/env bash
+          set -euo pipefail
+          echo "🏗️ Building unsigned APK..."
+          ./gradlew assembleRelease -x signReleaseBundle
+          echo "✅ Build finished"
 
     artifacts:
       - android/app/build/outputs/apk/release/*.apk
