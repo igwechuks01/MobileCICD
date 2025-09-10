@@ -6,7 +6,7 @@ workflows:
       node: latest
       java: 17
     scripts:
-      - name: Debug: show directory tree
+      - name: "Debug: show directory tree"
         working_directory: /Users/builder/clone
         script: |
           echo "📂 Current directory: $(pwd)"
