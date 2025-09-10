@@ -6,7 +6,7 @@ workflows:
       node: latest
       java: 17
     scripts:
-      - name: Debug: print current directory
+      - name: Debug print current directory
         script: |
           echo "PWD is: $(pwd)"
           echo "Files here:"
