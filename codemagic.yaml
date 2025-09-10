@@ -17,30 +17,17 @@ workflows:
         script: |
           #!/usr/bin/env bash
           set -euo pipefail
-
-          if [ -f ".yarnrc.yml" ]; then
-            echo "📦 Yarn Berry detected"
-            corepack enable
-            corepack prepare yarn@3.6.4 --activate
-          else
-            echo "📦 Yarn v1 detected (already installed on Codemagic)"
-            yarn --version
-          fi
+          echo "📦 Ensuring Yarn Berry is active"
+          corepack enable
+          corepack prepare yarn@3.6.4 --activate
+          yarn --version
 
       - name: Install dependencies
         script: |
           #!/usr/bin/env bash
           set -euo pipefail
           echo "📦 Installing project dependencies..."
-
-          if [ -f ".yarnrc.yml" ]; then
-            echo "Detected Yarn Berry (v2/v3)"
-            yarn install
-          else
-            echo "Detected Yarn v1"
-            yarn install --ignore-engines
-          fi
-
+          yarn install --immutable
           echo "✅ Dependencies installed successfully"
 
       - name: Build unsigned Android APK
