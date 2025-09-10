@@ -5,24 +5,29 @@ workflows:
     environment:
       node: latest
       java: 17
-
     scripts:
-      - name: Debug print current directory
-        script: |
-          echo "PWD is: $(pwd)"
-          echo "Files here:"
-          ls -la
-
       - name: Setup Yarn
+        working_directory: /Users/builder/clone
         script: |
           #!/usr/bin/env bash
           set -euo pipefail
-          echo "📦 Ensuring Yarn Berry is active"
-          corepack enable
-          corepack prepare yarn@3.6.4 --activate
-          yarn --version
+          
+          if [ -f ".yarnrc.yml" ]; then
+            echo "📦 Yarn Berry (v2/v3) detected"
+            corepack enable || true
+            corepack prepare yarn@3.6.4 --activate || true
+          else
+            echo "📦 Yarn v1 detected"
+            # Yarn is usually preinstalled on Codemagic
+            if ! command -v yarn &> /dev/null; then
+              npm install -g yarn
+            else
+              echo "ℹ️ Yarn already installed, skipping npm install"
+            fi
+          fi
 
       - name: Install dependencies
+        working_directory: /Users/builder/clone
         script: |
           #!/usr/bin/env bash
           set -euo pipefail
@@ -31,14 +36,14 @@ workflows:
           echo "✅ Dependencies installed successfully"
 
       - name: Build unsigned Android APK
-        working_directory: android
+        working_directory: /Users/builder/clone/android
         script: |
           #!/usr/bin/env bash
           set -euo pipefail
           echo "🏗️ Building unsigned APK..."
           ./gradlew assembleRelease -x signReleaseBundle
-          echo "✅ Build finished"
+          echo "✅ APK build finished"
 
     artifacts:
-      - android/app/build/outputs/apk/release/*.apk
-      - android/app/build/outputs/bundle/release/*.aab
+      - /Users/builder/clone/android/app/build/outputs/apk/release/*.apk
+      - /Users/builder/clone/android/app/build/outputs/bundle/release/*.aab
