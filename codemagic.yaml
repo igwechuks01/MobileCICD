@@ -10,29 +10,13 @@ workflows:
         working_directory: /usr/mobile-app/MobileCICD
         script: |
           #!/usr/bin/env bash
-          set -euo pipefail
+          set -ex
 
-          echo "🔍 Checking Yarn version..."
-          if [ -f ".yarnrc.yml" ]; then
-            echo "📦 Yarn Berry (v2/v3) detected"
-            corepack enable || echo "⚠️ Corepack already enabled"
-            corepack prepare yarn@3.6.4 --activate || echo "⚠️ Yarn already prepared"
-          else
-            echo "📦 Yarn v1 detected (default on Codemagic)"
-            npm install -g yarn || echo "⚠️ Yarn already installed"
-          fi
+          echo "🔧 Installing Yarn globally..."
+          npm install -g yarn
 
-          echo "📦 Installing JS dependencies"
+          echo "📦 Installing project dependencies..."
           yarn install --ignore-engines
-
-          if [ -d "ios" ]; then
-            echo "📱 Installing CocoaPods dependencies"
-            cd ios
-            pod install --repo-update
-            cd ..
-          else
-            echo "ℹ️ Skipping iOS setup (no ios/ directory found)"
-          fi
 
           echo "✅ Dependencies installed successfully"
 
