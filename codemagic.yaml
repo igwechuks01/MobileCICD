@@ -1,27 +1,39 @@
 workflows:
-  unsigned-build:
-    name: Unsigned Android & iOS Build
+  unsigned-rn-build:
+    name: Unsigned React Native Android & iOS Build
     max_build_duration: 60
     environment:
-      flutter: stable
+      node: latest
       xcode: latest
+      java: 17
     scripts:
-      - name: Get Flutter packages
-        script: flutter pub get
-
-      # Android Build
-      - name: Build unsigned Android APK
-        script: flutter build apk --release --no-sign
-      # OR for AAB
-      # script: flutter build appbundle --release --no-sign
-
-      # iOS Build (without signing)
-      - name: Build iOS app (no signing)
+      - name: Install dependencies
         script: |
-          flutter build ios --release --no-codesign
+          yarn install
+          cd ios && pod install --repo-update && cd ..
+
+      # Android unsigned build
+      - name: Build unsigned Android APK
+        script: |
+          cd android
+          ./gradlew assembleRelease -x signReleaseBundle
+          cd ..
+
+      # iOS unsigned build
+      - name: Build iOS app (no codesign)
+        script: |
+          cd ios
+          xcodebuild \
+            -workspace YourApp.xcworkspace \
+            -scheme YourApp \
+            -configuration Release \
+            -sdk iphoneos \
+            -archivePath $CM_BUILD_DIR/ios/archive/YourApp.xcarchive \
+            archive \
+            CODE_SIGNING_ALLOWED=NO
+          cd ..
 
     artifacts:
-      - build/app/outputs/flutter-apk/*.apk
-      - build/app/outputs/bundle/release/*.aab
-      - build/ios/iphoneos/*.app
-      - build/ios/archive/*.xcarchive
+      - android/app/build/outputs/apk/release/*.apk
+      - android/app/build/outputs/bundle/release/*.aab
+      - ios/archive/*.xcarchive
