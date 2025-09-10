@@ -6,16 +6,26 @@ workflows:
       node: latest
       java: 17
     scripts:
-      - name: Install dependencies
+      - name: Setup Yarn
+        working_directory: /usr/mobile-app/MobileCICD
         script: |
-          cd $CM_BUILD_DIR
-          yarn install
+          if [ -f ".yarnrc.yml" ]; then
+            echo "Yarn Berry detected"
+            corepack enable
+            corepack prepare yarn@3.6.4 --activate
+          else
+            echo "Yarn v1 detected"
+            npm install -g yarn
+          fi
+
+      - name: Install dependencies
+        working_directory: /usr/mobile-app/MobileCICD
+        script: yarn install --ignore-engines
 
       - name: Build unsigned Android APK
-        script: |
-          cd android
-          ./gradlew assembleRelease -x signReleaseBundle
+        working_directory: /usr/mobile-app/MobileCICD/android
+        script: ./gradlew assembleRelease -x signReleaseBundle
 
     artifacts:
-      - android/app/build/outputs/apk/release/*.apk
-      - android/app/build/outputs/bundle/release/*.aab
+      - /usr/mobile-app/MobileCICD/android/app/build/outputs/apk/release/*.apk
+      - /usr/mobile-app/MobileCICD/android/app/build/outputs/bundle/release/*.aab
