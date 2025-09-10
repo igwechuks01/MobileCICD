@@ -32,7 +32,15 @@ workflows:
           #!/usr/bin/env bash
           set -euo pipefail
           echo "📦 Installing project dependencies..."
-          yarn install --verbose --no-progress
+
+          if [ -f ".yarnrc.yml" ]; then
+            echo "Detected Yarn Berry (v2/v3)"
+            yarn install
+          else
+            echo "Detected Yarn v1"
+            yarn install --ignore-engines
+          fi
+
           echo "✅ Dependencies installed successfully"
 
       - name: Build unsigned Android APK
