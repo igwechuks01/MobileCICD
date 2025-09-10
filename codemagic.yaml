@@ -32,7 +32,7 @@ workflows:
           #!/usr/bin/env bash
           set -euo pipefail
           echo "📦 Installing project dependencies..."
-          yarn install --ignore-engines
+          yarn install --verbose --no-progress
           echo "✅ Dependencies installed successfully"
 
       - name: Build unsigned Android APK
